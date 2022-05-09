@@ -1,18 +1,21 @@
-import React from 'react';
+
 import ReactDOM from 'react-dom/client';
 import './index.css';
 import ParliamentChart from './parliamentChart';
 import reportWebVitals from './reportWebVitals';
-let deputeesUrl = require('./data/deputes-active.csv');
+import * as d3 from 'd3';
 
+let deputeesUrl = require('./data/deputes-active.csv');
 const root = ReactDOM.createRoot(document.getElementById('root'));
+d3.csv(deputeesUrl)
+  .then((data) => {
+    let parliament = ParliamentChart();
+    let svg = d3.select(document.getElementById('parliament'));
+    svg.datum(data).call(parliament);
+  });
 
 root.render(
-  <React.StrictMode>
-    <ParliamentChart 
-      dataUrl={deputeesUrl} 
-      width={800}/>
-  </React.StrictMode>
+  <svg id="parliament" width='800' height='400'></svg>
 );
 
 // If you want to start measuring performance in your app, pass a function

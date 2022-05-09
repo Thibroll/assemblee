@@ -3,14 +3,8 @@ import * as d3 from 'd3';
 
 const metric = "id";
 
-export default ({dataUrl, width=800}) => {
-  let svg = d3.create('svg');
-  let parliament = parliamentChart();
-  d3.csv(dataUrl).then((response) => svg.datum(response).call(parliament));
-  return svg.innerHTML;
-}
 
-function parliamentChart(){
+export  default()=>{
   // util
   function series(s, n) { var r = 0; for (var i = 0; i <= n; i++) { r+=s(i); } return r; }
   
@@ -27,7 +21,6 @@ function parliamentChart(){
   function generateParliament(data){
     width = width ? width : this.width.baseVal.value;
     height = height ? height : this.height.baseVal.value;
-    console.log(width);
 
     const outerParliamentRadius = Math.min(width/2, height);
     const innerParliementRadius = outerParliamentRadius * innerRadiusCoef;
