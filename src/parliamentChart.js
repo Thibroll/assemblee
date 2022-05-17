@@ -1,27 +1,23 @@
 
 import * as d3 from 'd3';
 
-const metric = "id";
-
 
 export  default()=>{
   // util
   function series(s, n) { var r = 0; for (var i = 0; i <= n; i++) { r+=s(i); } return r; }
   
   /* params */
-  var width,
-    height,
+  var width = 800,
+    height = 600,
     innerRadiusCoef = 0.4,
-    colorMap = d3.schemeCategory10;
+    colorMap = d3.schemeCategory10,
+    metric = "id";
   
   function parliament(datum){
     datum.each(generateParliament);
   }
 
   function generateParliament(data){
-    width = width ? width : this.width.baseVal.value;
-    height = height ? height : this.height.baseVal.value;
-
     const outerParliamentRadius = Math.min(width/2, height);
     const innerParliementRadius = outerParliamentRadius * innerRadiusCoef;
     const seatCount = data.length;
@@ -70,42 +66,105 @@ export  default()=>{
       return a.polar.teta - b.polar.teta || b.polar.r - a.polar.r;
     });
 
-    let svg = d3.select(this);
-
     /* helpers to get value from seat data */
     var seatX = function(d,i) { return seatPositions[i].cartesian.x + width / 2; };
     var seatY = function(d,i) { return seatPositions[i].cartesian.y + + outerParliamentRadius; };
     var seatRadius = function(d) { return innerRadiusCoef * rowWidth; };
     var seatColor = (d) => (d3.scaleOrdinal().domain(data.map(x=>x[metric])).range(colorMap))(d[metric]);
   
-    data = data.sort(function(a,b){return d3.ascending(a[metric], b[metric])});
-    const seats = svg.selectAll("seat").data(data, d=>d.id);
+    //create div for parliament svg and legend
+    let chartDiv = d3.select(this)
+      .append("div").attr("id", "assembleeChart");
+
+    //initiate svg
+    let svg = chartDiv.append("svg");
+    svg.attr("id", "assembleSvg")
+      .attr("width", width).attr("height", height);
+
+    // create a tooltip
+    var tooltip = d3.select(this)
+      .append("div")
+        .style("visibility", "hidden")
+        .attr("class", "tooltip")
+        .style("background-color", "white")
+        .style("border", "solid")
+        .style("border-width", "2px")
+        .style("border-radius", "5px")
+        .style("width", "fit-content")
+        .style("padding", "5px")
+        .style("position", "absolute");
 
     //events
-    var handleMouseOver =  (event)=>{};
-    var handleMouseOut = (event)=>{};
-    
-    const seatsEnter = seats
+    var handleMouseOver = (event)=>{
+      tooltip
+        .style("visibility", "visible");
+      d3.select(event.target)
+        .style("stroke", "black");
+    };
+    var handleMouseMove = (event)=>{
+      var data = event.target.__data__;
+      tooltip
+        .html(data.civ + ' ' + data.prenom + ' ' + data.nom + '<br>' +
+        data.groupe + '<br>' +
+        data.age + ' ans<br>' + 
+        data.departementNom + '<br>')
+        .style("left", (event.pageX+15+"px"))
+        .style("top", (event.pageY+15+"px"));
+    };
+    var handleMouseLeave = (event)=>{
+      tooltip
+        .style("visibility", "hidden");
+      d3.select(event.target)
+        .style("stroke", "none");
+    };
+
+    data = data.sort(function(a,b){return d3.ascending(a[metric], b[metric])});
+    const seats = svg.selectAll(".seat").data(data, d=>d.id);
+
+    // generate seats
+    var seatsEnter = seats
       .enter()
       .append('circle')
-      .attr('class', 'seat')
-      .attr("cx", seatX)
-      .attr("cy", seatY)
-      .attr("r", seatRadius)
-      .attr("fill", seatColor)
-      .on("mouseover", handleMouseOver)
-      .on("mouseout", handleMouseOut);
+        .attr('class', 'seat')
+        .attr("cx", seatX)
+        .attr("cy", seatY)
+        .attr("r", seatRadius)
+        .attr("fill", seatColor)
+         .on("mouseover", handleMouseOver)
+         .on("mousemove", handleMouseMove)
+         .on("mouseleave", handleMouseLeave);
+
+    //create legend
+    var legend = chartDiv.append("svg").attr("id", "legendSvg");
+
   }
+
+  parliament.width = function(value){
+    if (!arguments.length) return width;
+    width = value;
+    return parliament;
+
+  };  parliament.height = function(value){
+    if (!arguments.length) return height;
+    height = value;
+    return parliament;
+  };
 
   parliament.colorMap = function(value){
     if (!arguments.length) return colorMap;
     colorMap = value;
     return parliament;
-  }
+  };
 
   parliament.innerRadiusCoef = function(value) {
     if (!arguments.length) return innerRadiusCoef;
     innerRadiusCoef = value;
+    return parliament;
+  };
+
+  parliament.metric = function(value) {
+    if (!arguments.length) return metric;
+    metric = value;
     return parliament;
   };
 
