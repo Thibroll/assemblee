@@ -16,7 +16,7 @@ export  default()=>{
 
   /* inner variables */
   var seatPositions = [],
-    svg, seats, seatsEnter, seatX, seatY, seatRadius, seatColor;
+    svg, seatsEnter, seatX, seatY, seatRadius, seatColor;
   
   function parliament(datum){
     datum.each(generateParliament);
@@ -123,11 +123,11 @@ export  default()=>{
     };
 
     data = sortData(data, metric);
-    seats = svg.selectAll(".seat");
+    let seats = svg.selectAll(".seat");
 
     // generate seats
     seatsEnter = seats
-      .data(data, d=>d.id)
+      .data(data, function(d){ return d.id;})
       .enter()
       .append('circle')
         .attr('class', 'seat')
@@ -170,14 +170,16 @@ export  default()=>{
   parliament.metric = function(value) {
     if (!arguments.length) return metric;
     metric = value;
-    if (seats){
+    if (seatsEnter){
       let data = seatsEnter.data();
       data = sortData(data, metric);
-      seats
-      .data(data)
-      .update()
-      .select('circle')
-      .attr('fill', seatColor);
+      let seats = svg.selectAll(".seat")
+        .data(data, function(d){ return d.id;})
+        .transition()
+        .duration(1000)
+        .attr("cx", seatX)
+        .attr("cy", seatY)
+        .attr('fill', seatColor);
     }
     return parliament;
   };
