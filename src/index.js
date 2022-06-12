@@ -24,6 +24,7 @@ class MetricForm extends Component {
   handleChange(event) {
     this.setState({value: event.target.value});
     metric = event.target.value;
+    parliament.metric(metric);
   }
 
   render() {
@@ -65,8 +66,7 @@ class MetricForm extends Component {
 }
 
 d3.csv(deputeesUrl)
-  .then((data) => {
-    
+  .then((data) => { 
     let parlDiv = d3.select(document.getElementById('parliament'));
     parlDiv.datum(data).call(parliament);
   });

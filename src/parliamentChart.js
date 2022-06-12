@@ -5,6 +5,7 @@ import * as d3 from 'd3';
 export  default()=>{
   // util
   function series(s, n) { var r = 0; for (var i = 0; i <= n; i++) { r+=s(i); } return r; }
+  function sortData(data, param){return data.sort(function(a,b){return d3.ascending(a[param], b[param])});}
   
   /* params */
   var width = 800,
@@ -12,6 +13,10 @@ export  default()=>{
     innerRadiusCoef = 0.4,
     colorMap = d3.schemeCategory10,
     metric = "id";
+
+  /* inner variables */
+  var seatPositions = [],
+    svg, seats, seatsEnter, seatX, seatY, seatRadius, seatColor;
   
   function parliament(datum){
     datum.each(generateParliament);
@@ -39,7 +44,6 @@ export  default()=>{
       }
     })();
     const rowWidth = (outerParliamentRadius - innerParliementRadius) / nRows;
-    var seatPositions = [];
     (function() {
       var seatsToRemove = maxSeatNumber - seatCount;
       for (var i = 0; i < nRows; i++) {
@@ -67,17 +71,17 @@ export  default()=>{
     });
 
     /* helpers to get value from seat data */
-    var seatX = function(d,i) { return seatPositions[i].cartesian.x + width / 2; };
-    var seatY = function(d,i) { return seatPositions[i].cartesian.y + + outerParliamentRadius; };
-    var seatRadius = function(d) { return innerRadiusCoef * rowWidth; };
-    var seatColor = (d) => (d3.scaleOrdinal().domain(data.map(x=>x[metric])).range(colorMap))(d[metric]);
+    seatX = function(d,i) { return seatPositions[i].cartesian.x + width / 2; };
+    seatY = function(d,i) { return seatPositions[i].cartesian.y + outerParliamentRadius; };
+    seatRadius = function(d) { return innerRadiusCoef * rowWidth; };
+    seatColor = (d) => (d3.scaleOrdinal().domain(data.map(x=>x[metric])).range(colorMap))(d[metric]);
   
     //create div for parliament svg and legend
     let chartDiv = d3.select(this)
       .append("div").attr("id", "assembleeChart");
 
     //initiate svg
-    let svg = chartDiv.append("svg");
+    svg = chartDiv.append("svg");
     svg.attr("id", "assembleSvg")
       .attr("width", width).attr("height", height);
 
@@ -118,11 +122,12 @@ export  default()=>{
         .style("stroke", "none");
     };
 
-    data = data.sort(function(a,b){return d3.ascending(a[metric], b[metric])});
-    const seats = svg.selectAll(".seat").data(data, d=>d.id);
+    data = sortData(data, metric);
+    seats = svg.selectAll(".seat");
 
     // generate seats
-    var seatsEnter = seats
+    seatsEnter = seats
+      .data(data, d=>d.id)
       .enter()
       .append('circle')
         .attr('class', 'seat')
@@ -165,6 +170,15 @@ export  default()=>{
   parliament.metric = function(value) {
     if (!arguments.length) return metric;
     metric = value;
+    if (seats){
+      let data = seatsEnter.data();
+      data = sortData(data, metric);
+      seats
+      .data(data)
+      .update()
+      .select('circle')
+      .attr('fill', seatColor);
+    }
     return parliament;
   };
 
