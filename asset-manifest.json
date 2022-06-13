@@ -1,16 +1,16 @@
 {
   "files": {
-    "main.css": "/static/css/main.79096002.css",
-    "main.js": "/static/js/main.2f885a75.js",
-    "static/js/787.584f3c6c.chunk.js": "/static/js/787.584f3c6c.chunk.js",
-    "static/media/deputes-active.csv": "/static/media/deputes-active.7d11febb1290c3143f03.csv",
-    "index.html": "/index.html",
-    "main.79096002.css.map": "/static/css/main.79096002.css.map",
-    "main.2f885a75.js.map": "/static/js/main.2f885a75.js.map",
-    "787.584f3c6c.chunk.js.map": "/static/js/787.584f3c6c.chunk.js.map"
+    "main.css": "/assemblee/static/css/main.79096002.css",
+    "main.js": "/assemblee/static/js/main.4336a161.js",
+    "static/js/787.584f3c6c.chunk.js": "/assemblee/static/js/787.584f3c6c.chunk.js",
+    "static/media/deputes-active.csv": "/assemblee/static/media/deputes-active.7d11febb1290c3143f03.csv",
+    "index.html": "/assemblee/index.html",
+    "main.79096002.css.map": "/assemblee/static/css/main.79096002.css.map",
+    "main.4336a161.js.map": "/assemblee/static/js/main.4336a161.js.map",
+    "787.584f3c6c.chunk.js.map": "/assemblee/static/js/787.584f3c6c.chunk.js.map"
   },
   "entrypoints": [
     "static/css/main.79096002.css",
-    "static/js/main.2f885a75.js"
+    "static/js/main.4336a161.js"
   ]
 }
