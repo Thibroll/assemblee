@@ -19,7 +19,7 @@ export  default()=>{
 
   /* inner variables */
   var seatPositions = [],
-    svg, seatsEnter, seatX, seatY, seatRadius, seatColor, outerParliamentRadius, innerParliementRadius, seatCount;
+    svg, chartDiv, seatsEnter, seatX, seatY, seatRadius, seatColor, outerParliamentRadius, innerParliementRadius, seatCount;
   
   function parliament(datum){
     datum.each(generateParliament);
@@ -80,7 +80,7 @@ export  default()=>{
     seatColor = (d) => (d3.scaleOrdinal().domain(data.map(x=>x[metric])).range(colorMap))(d[metric]);
   
     //create div for parliament svg and legend
-    let chartDiv = d3.select(this)
+    chartDiv = d3.select(this)
       .append("div").attr("id", "assembleeChart");
 
     //initiate svg
@@ -144,9 +144,51 @@ export  default()=>{
          .on("mousemove", handleMouseMove)
          .on("mouseleave", handleMouseLeave);
 
-    //create legend
-    var legend = chartDiv.append("svg").attr("id", "legendSvg");
+    legend();
 
+  }
+
+  function legend(){
+    var legendMargin = {top: 30, right: 30, bottom: 100, left: 60},
+      legendWidth = width - legendMargin.left - legendMargin.right,
+      legendHeight = height - legendMargin.top - legendMargin.bottom;
+
+    d3.select('#legendSvg').remove();
+    var legend = chartDiv.append("svg").attr("id", "legendSvg").attr('width', width).attr('height', height)
+      .append("g").attr("transform",
+      "translate(" + legendMargin.left + "," + legendMargin.top + ")");
+
+    let data = svg.selectAll(".seat").data();
+    console.log(data);
+    let legendData = d3.rollups(data, v => v.length, d => d[metric]);
+    legendData = sortData(legendData, 0);
+
+    var x = d3.scaleBand()
+    .range([ 0, legendWidth ])
+    .domain(legendData.map(d => d[0]))
+    .padding(0.2);
+    legend.append("g")
+    .attr("transform", "translate(0," + legendHeight + ")")
+    .call(d3.axisBottom(x))
+    .selectAll("text")
+      .attr("transform", "translate(-10,0)rotate(-45)")
+      .style("text-anchor", "end");
+
+    var y = d3.scaleLinear()
+    .domain([0, Math.max(...legendData.map(d => d[1])) + 5])
+    .range([ legendHeight, 0]);
+    legend.append("g")
+    .call(d3.axisLeft(y));
+
+    legend.selectAll("mybar")
+    .data(legendData)
+    .enter()
+    .append("rect")
+      .attr("x", function(d) { return x(d[0]); })
+      .attr("y", function(d) { return y(d[1]); })
+      .attr("width", x.bandwidth())
+      .attr("height", function(d) { return legendHeight - y(d[1]); })
+      .attr("fill", (d) => d3.scaleOrdinal().domain(data.map(x=>x[metric])).range(colorMap)(d[0]));
   }
 
   parliament.width = function(value){
@@ -211,8 +253,9 @@ export  default()=>{
       .delay((d,i) => randn(300,1))
        .duration((d,i) => randn(700, 1))
        .attr("cx", seatX)
-       .attr("cy", seatY)
-       ;
+       .attr("cy", seatY);
+
+      legend();
     }
     return parliament;
   };
