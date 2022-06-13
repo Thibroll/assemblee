@@ -1,12 +1,14 @@
 
 import * as d3 from 'd3';
+import { path } from 'd3';
 import { stackOffsetDiverging } from 'd3';
 
 
 export  default()=>{
   // util
   function series(s, n) { var r = 0; for (var i = 0; i <= n; i++) { r+=s(i); } return r; }
-  function sortData(data, param){return data.sort(function(a,b){return d3.ascending(a[param], b[param])});}
+  function sortData(data, param) {return data.sort(function(a,b){return d3.ascending(a[param], b[param])});}
+  function randn(n, i)  {return n * ((Math.random()) ** i) * 2 / i; }
   
   /* params */
   var width = 800,
@@ -176,32 +178,42 @@ export  default()=>{
       let data = seatsEnter.data();
       data = sortData(data, metric);
       let seats = svg.selectAll(".seat")
-        .data(data, function(d){ return d.id;})
-        .each((d,i) => d.order_i = i);
+        .data(data, function(d){ return d.id;});
 
-      function offsetAngle(sourceAngle, targetAngle){
-        if (sourceAngle <= targetAngle){return - Math.PI / 250}
-        else{return Math.PI/250}
-      }
-
-      function randn(n, i)  {return n * ((Math.random()) ** i) * 2 / i; }
       seats
       .transition()
-        .duration(600)
-        .attr("cx", (d,i) => Math.cos(seatPositions[i].polar.teta) 
-          * d.sourceCoordinates.polar.r + width / 2)
-        .attr("cy", (d,i) =>  Math.sin(seatPositions[i].polar.teta) 
-          * d.sourceCoordinates.polar.r + outerParliamentRadius)
-        .delay((d,i)=>randn(500,1))
+        .delay((d,i) => randn(300,1))
+        .duration((d,i) => randn(1000, 1))
+        .tween("transform", function(d,i) {
+          let line = d3.path();
+          line.arc(width/2, outerParliamentRadius, d.sourceCoordinates.polar.r, d.sourceCoordinates.polar.teta, 
+            seatPositions[i].polar.teta, d.sourceCoordinates.polar.teta > seatPositions[i].polar.teta);
+          var path = svg.append("path")
+            .attr("d", line)
+            .style("stroke", "black")
+            .style("fill", "none");
+          
+          var length = path.node().getTotalLength();
+          var r = d3.interpolate(0, length); 
+          let moveFct = function(t){
+            var point = path.node().getPointAtLength(r(t)); 
+            d3.select(this)
+              .attr("cx", point.x) 
+              .attr("cy", point.y)
+          }
+          path.remove();
+          d.sourceCoordinates = seatPositions[i];
+          return moveFct;
+        })
       .transition()
-       .duration(500)
+      .delay((d,i) => randn(300,1))
+       .duration((d,i) => randn(700, 1))
        .attr("cx", seatX)
        .attr("cy", seatY)
-       .attr('fill', seatColor);
-      seats.each(function(d,i) {d.sourceCoordinates = seatPositions[i]});
+       ;
     }
     return parliament;
   };
-
+  
   return parliament;
 }
