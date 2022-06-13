@@ -1,5 +1,6 @@
 {
   "name": "assemblee",
+  "homepage": "https://thibroll.github.io/assemblee/",
   "version": "0.1.0",
   "private": true,
   "dependencies": {
