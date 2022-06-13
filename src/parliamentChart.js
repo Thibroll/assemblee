@@ -1,5 +1,6 @@
 
 import * as d3 from 'd3';
+import { stackOffsetDiverging } from 'd3';
 
 
 export  default()=>{
@@ -16,16 +17,16 @@ export  default()=>{
 
   /* inner variables */
   var seatPositions = [],
-    svg, seatsEnter, seatX, seatY, seatRadius, seatColor;
+    svg, seatsEnter, seatX, seatY, seatRadius, seatColor, outerParliamentRadius, innerParliementRadius, seatCount;
   
   function parliament(datum){
     datum.each(generateParliament);
   }
 
   function generateParliament(data){
-    const outerParliamentRadius = Math.min(width/2, height);
-    const innerParliementRadius = outerParliamentRadius * innerRadiusCoef;
-    const seatCount = data.length;
+    outerParliamentRadius = Math.min(width/2, height);
+    innerParliementRadius = outerParliamentRadius * innerRadiusCoef;
+    seatCount = data.length;
 
     //Computation of parliament seats
     //positions of the seats inside the parliament
@@ -135,6 +136,7 @@ export  default()=>{
         .attr("cy", seatY)
         .attr("r", seatRadius)
         .attr("fill", seatColor)
+        .each((d,i) => d.sourceCoordinates = seatPositions[i])
          .on("mouseover", handleMouseOver)
          .on("mousemove", handleMouseMove)
          .on("mouseleave", handleMouseLeave);
@@ -175,11 +177,28 @@ export  default()=>{
       data = sortData(data, metric);
       let seats = svg.selectAll(".seat")
         .data(data, function(d){ return d.id;})
-        .transition()
-        .duration(1000)
-        .attr("cx", seatX)
-        .attr("cy", seatY)
-        .attr('fill', seatColor);
+        .each((d,i) => d.order_i = i);
+
+      function offsetAngle(sourceAngle, targetAngle){
+        if (sourceAngle <= targetAngle){return - Math.PI / 250}
+        else{return Math.PI/250}
+      }
+
+      function randn(n, i)  {return n * ((Math.random()) ** i) * 2 / i; }
+      seats
+      .transition()
+        .duration(500)
+        .attr("cx", (d,i) => Math.cos(seatPositions[i].polar.teta) 
+          * d.sourceCoordinates.polar.r + width / 2)
+        .attr("cy", (d,i) =>  Math.sin(seatPositions[i].polar.teta) 
+          * d.sourceCoordinates.polar.r + outerParliamentRadius)
+        .delay((d,i)=>randn(500,1))
+      .transition()
+       .duration(500)
+       .attr("cx", seatX)
+       .attr("cy", seatY)
+       .attr('fill', seatColor);
+      seats.each(function(d,i) {this.sourceCoordinates = seatPositions[i]});
     }
     return parliament;
   };
