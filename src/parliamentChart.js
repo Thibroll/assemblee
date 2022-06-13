@@ -12,7 +12,7 @@ export  default()=>{
   var width = 800,
     height = 600,
     innerRadiusCoef = 0.4,
-    colorMap = d3.schemeCategory10,
+    colorMap = d3.schemePaired,
     metric = "id";
 
   /* inner variables */
@@ -187,7 +187,7 @@ export  default()=>{
       function randn(n, i)  {return n * ((Math.random()) ** i) * 2 / i; }
       seats
       .transition()
-        .duration(500)
+        .duration(600)
         .attr("cx", (d,i) => Math.cos(seatPositions[i].polar.teta) 
           * d.sourceCoordinates.polar.r + width / 2)
         .attr("cy", (d,i) =>  Math.sin(seatPositions[i].polar.teta) 
@@ -198,7 +198,7 @@ export  default()=>{
        .attr("cx", seatX)
        .attr("cy", seatY)
        .attr('fill', seatColor);
-      seats.each(function(d,i) {this.sourceCoordinates = seatPositions[i]});
+      seats.each(function(d,i) {d.sourceCoordinates = seatPositions[i]});
     }
     return parliament;
   };
