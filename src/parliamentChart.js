@@ -114,7 +114,8 @@ export  default()=>{
         .html(data.civ + ' ' + data.prenom + ' ' + data.nom + '<br>' +
         data.groupe + '<br>' +
         data.age + ' ans<br>' + 
-        data.departementNom + '<br>')
+        data.departementNom  + ' (' + data.departementCode + ')<br>' +
+        data.job)
         .style("left", (event.pageX+15+"px"))
         .style("top", (event.pageY+15+"px"));
     };
@@ -190,7 +191,7 @@ export  default()=>{
             seatPositions[i].polar.teta, d.sourceCoordinates.polar.teta > seatPositions[i].polar.teta);
           var path = svg.append("path")
             .attr("d", line)
-            .style("stroke", "black")
+            .style("stroke", "none")
             .style("fill", "none");
           
           var length = path.node().getTotalLength();
@@ -205,6 +206,7 @@ export  default()=>{
           d.sourceCoordinates = seatPositions[i];
           return moveFct;
         })
+      .attr("fill", seatColor)
       .transition()
       .delay((d,i) => randn(300,1))
        .duration((d,i) => randn(700, 1))
