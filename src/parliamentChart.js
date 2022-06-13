@@ -159,7 +159,6 @@ export  default()=>{
       "translate(" + legendMargin.left + "," + legendMargin.top + ")");
 
     let data = svg.selectAll(".seat").data();
-    console.log(data);
     let legendData = d3.rollups(data, v => v.length, d => d[metric]);
     legendData = sortData(legendData, 0);
 
